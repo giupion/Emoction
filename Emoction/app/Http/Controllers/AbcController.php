@@ -41,4 +41,27 @@ class AbcController extends Controller
             return response()->json(['error' => 'Errore durante il salvataggio dei dati'], 500);
         }
     }
+
+    public function update(Request $request, Abc $abc)
+    {
+        $data = $request->validate([
+            'data_e_ora' => 'required|date',
+            'evento' => 'required|string',
+            'Pensiero' => 'nullable|string',
+            'Emozione' => 'nullable|string',
+            'Intensita' => 'nullable|integer',
+            'Azione' => 'nullable|string',
+        ]);
+
+        $abc->update($data);
+
+        return response()->json($abc, 200);
+    }
+
+    public function destroy(Abc $abc)
+    {
+        $abc->delete();
+
+        return response()->json(null, 204);
+    }
 }

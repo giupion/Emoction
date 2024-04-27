@@ -32,6 +32,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/abc', [AbcController::class, 'store'])->name('abc.store');
     Route::get('logs', [LogViewerController::class, 'index']);
-});
+    Route::post('/abc', [AbcController::class, 'store']);
+    Route::put('/abc/{abc}', [AbcController::class, 'update']);
+    Route::delete('/abc/{abc}', [AbcController::class, 'destroy']);});
 
 require __DIR__.'/auth.php';
