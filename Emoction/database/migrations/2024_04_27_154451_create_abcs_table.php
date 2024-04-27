@@ -1,10 +1,11 @@
 <?php
+// database/migrations/..._create_abcs_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateAbcsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->string('evento');
             $table->text('Pensiero')->nullable();
             $table->string('Emozione');
-            $table->integer('Intensità');
+            $table->integer('Intensita');
             $table->text('Azione')->nullable();
             $table->timestamps();
         });
@@ -31,4 +32,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('abcs');
     }
-};
+}
