@@ -75,13 +75,18 @@ export default function Dashboard({ auth, abcs }) {
 
     const handleSaveRow = async () => {
         try {
-            const response = await Inertia.post('/abc', {
+            const response = await Inertia.put(`/abc/${editingRow.id}`, {
                 ...editingRow,
                 _token: auth.csrf_token
             });
-
+    
             if (response && response.ok) {
-                setSavedData(prevData => [...prevData, response.data]);
+                // Aggiorna solo la riga modificata nella lista dei dati salvati
+                setSavedData(prevData =>
+                    prevData.map(item =>
+                        item.id === editingRow.id ? response.data : item
+                    )
+                );
                 setEditingRow(null);
             } else {
                 console.error('Errore durante il salvataggio dei dati');
@@ -90,6 +95,7 @@ export default function Dashboard({ auth, abcs }) {
             console.error('Errore durante il salvataggio dei dati:', error.message);
         }
     };
+    
 
     const handleEditRowChange = (e, field) => {
         const { value } = e.target;
@@ -105,9 +111,12 @@ export default function Dashboard({ auth, abcs }) {
             const response = await deleteRequest(`/abc/${id}`, {
                 _token: auth.csrf_token
             });
-
+    
             if (response && response.ok) {
-                setSavedData(savedData.filter(item => item.id !== id));
+                // Rimuovi la riga eliminata dalla lista dei dati salvati
+                setSavedData(prevData =>
+                    prevData.filter(item => item.id !== id)
+                );
             } else {
                 console.error('Errore durante la cancellazione dei dati');
             }
@@ -115,6 +124,7 @@ export default function Dashboard({ auth, abcs }) {
             console.error('Errore durante la cancellazione dei dati:', error.message);
         }
     };
+    
 
     return (
         <AuthenticatedLayout
@@ -129,7 +139,7 @@ export default function Dashboard({ auth, abcs }) {
                             {/* Display saved data */}
                             <div>
                                 <h3 className="text-lg font-semibold mb-2">Dati salvati:</h3>
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-hidden">
                                     <table className="w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
