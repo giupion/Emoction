@@ -114,14 +114,14 @@ export default function Dashboard({ auth, abcs }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Emoction</h2>}
         >
             <Head title="Dashboard" />
             <div className="py-12 w-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            <h3 className="text-lg font-semibold mb-2">Dati salvati:</h3>
+                            <h3 className="text-lg font-semibold mb-2">Lista ABC</h3>
                             <div className="overflow-x-hidden">
                                 <table className="w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
