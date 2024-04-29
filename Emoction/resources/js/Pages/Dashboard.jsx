@@ -31,6 +31,7 @@ export default function Dashboard({ auth, abcs }) {
         setData(prevData => ({ ...prevData, [name]: value }));
     };
 
+    const currentDate = new Date().toISOString().split('T')[0];
     const handleSave = async (e) => {
         e.preventDefault();
     
@@ -61,7 +62,6 @@ export default function Dashboard({ auth, abcs }) {
         }
     };
 
-    const currentDate = new Date().toISOString().split('T')[0];
     const handleEditRow = (rowData) => {
         setEditingRow(rowData);
     };
@@ -159,8 +159,8 @@ export default function Dashboard({ auth, abcs }) {
                             {showForm && (
                                 <form onSubmit={handleSave} className="mt-4">
                                     <div className="flex flex-col">
-                                    <label htmlFor="data_e_ora">Data e Ora:</label>
-<input type="datetime-local" name="data_e_ora" value={data.data_e_ora} onChange={handleChange} max={`${currentDate}T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="data_e_ora">Data e Ora:</label>
+                                        <input type="datetime-local" name="data_e_ora" value={currentDate} onChange={handleChange} min={`${currentDate}T00:00`} max={`${currentDate}T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="evento">Evento:</label>
                                         <input type="text" name="evento" value={data.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Pensiero">Pensiero:</label>
@@ -168,7 +168,7 @@ export default function Dashboard({ auth, abcs }) {
                                         <label htmlFor="Emozione">Emozione:</label>
                                         <input type="text" name="Emozione" value={data.Emozione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Intensita">Intensità:</label>
-                                        <input type="number" name="Intensita" value={data.Intensita} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <input type="number" name="Intensita" value={data.Intensita} onChange={handleChange} min="0" className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Azione">Azione:</label>
                                         <textarea name="Azione" value={data.Azione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Salva</button>
@@ -179,9 +179,8 @@ export default function Dashboard({ auth, abcs }) {
                                 <div className="mt-4">
                                     <h3 className="text-lg font-semibold mb-2">Modifica riga:</h3>
                                     <div className="flex flex-col">
-                                    <label htmlFor="data_e_ora">Data e Ora:</label>
-<input type="datetime-local" name="data_e_ora" value={data.data_e_ora} onChange={handleChange} max={`${new Date().getFullYear()}-12-31T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-
+                                        <label htmlFor="data_e_ora">Data e Ora:</label>
+                                        <input type="datetime-local" name="data_e_ora" value={editingRow.data_e_ora} onChange={(e) => handleEditRowChange(e, 'data_e_ora')} min={`${currentDate}T00:00`} max={`${currentDate}T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="evento">Evento:</label>
                                         <input type="text" name="evento" value={editingRow.evento} onChange={(e) => handleEditRowChange(e, 'evento')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Pensiero">Pensiero:</label>
@@ -189,7 +188,7 @@ export default function Dashboard({ auth, abcs }) {
                                         <label htmlFor="Emozione">Emozione:</label>
                                         <input type="text" name="Emozione" value={editingRow.Emozione} onChange={(e) => handleEditRowChange(e, 'Emozione')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Intensita">Intensità:</label>
-                                        <input type="number" name="Intensita" value={editingRow.Intensita} onChange={(e) => handleEditRowChange(e, 'Intensita')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <input type="number" name="Intensita" value={editingRow.Intensita} onChange={(e) => handleEditRowChange(e, 'Intensita')} min="0" className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Azione">Azione:</label>
                                         <textarea name="Azione" value={editingRow.Azione} onChange={(e) => handleEditRowChange(e, 'Azione')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <button onClick={handleSaveRow} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Salva</button>
