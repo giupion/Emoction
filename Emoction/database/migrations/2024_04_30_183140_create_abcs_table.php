@@ -1,5 +1,4 @@
 <?php
-// database/migrations/..._create_abcs_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,8 +17,8 @@ class CreateAbcsTable extends Migration
             $table->datetime('data_e_ora');
             $table->string('evento');
             $table->text('Pensiero')->nullable();
-            $table->string('Emozione');
-            $table->integer('Intensita');
+            $table->string('nome')->nullable(); // Aggiunto campo 'nome'
+            $table->integer('intensita')->nullable(); // Aggiunto campo 'intensita'
             $table->text('Azione')->nullable();
             $table->timestamps();
         });
