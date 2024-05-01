@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AbcController;
 use App\Http\Controllers\ProfileController;
@@ -26,7 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::prefix('abc')->group(function () {
+    Route::prefix('abc')->namespace('App\Http\Controllers')->group(function () {
         Route::post('/', [AbcController::class, 'store'])->name('abc.store');
         Route::put('/{abc}', [AbcController::class, 'update'])->name('abc.update');
         Route::delete('/{abc}', [AbcController::class, 'destroy'])->name('abc.destroy');

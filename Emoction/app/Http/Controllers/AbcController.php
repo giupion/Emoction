@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Abc;
+use App\Models\Emozione;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -13,14 +14,16 @@ class AbcController extends Controller
     public function store(Request $request)
     {
         try {
+            // Log dei dati ricevuti
+            Log::info('Dati ricevuti:', $request->all());
+
             $validatedData = $request->validate([
                 'data_e_ora' => 'required|date',
                 'evento' => 'required|string',
                 'Pensiero' => 'nullable|string',
-                'emozioni' => 'required|array',
-                'emozioni.*.nome' => 'required|string',
-                'emozioni.*.intensita' => 'required|integer',
                 'Azione' => 'nullable|string',
+                'nome' => 'required|string',
+                'intensita' => 'required|integer',
             ]);
 
             $abc = new Abc();
@@ -28,43 +31,20 @@ class AbcController extends Controller
             $abc->user_id = Auth::id();
             $abc->save();
 
+            // Salva il nome e l'intensità associati all'Abc
+            Emozione::create([
+                'nome' => $validatedData['nome'],
+                'intensita' => $validatedData['intensita'],
+                'abc_id' => $abc->id,
+            ]);
+
+            // Log della conferma di salvataggio
+            Log::info('Dati salvati con successo:', $validatedData);
+
             return Redirect::back()->with('success', 'Riga salvata correttamente.');
         } catch (\Exception $e) {
             Log::error('Errore durante il salvataggio dei dati: ' . $e->getMessage());
             return Redirect::back()->with('error', 'Errore durante il salvataggio dei dati.');
-        }
-    }
-
-    public function update(Request $request, Abc $abc)
-    {
-        try {
-            $validatedData = $request->validate([
-                'data_e_ora' => 'required|date',
-                'evento' => 'required|string',
-                'Pensiero' => 'nullable|string',
-                'emozioni.*.nome' => 'required|string',
-                'emozioni.*.intensita' => 'required|integer',
-                'Azione' => 'nullable|string',
-            ]);
-
-            $abc->update($validatedData);
-
-            return Redirect::route('dashboard')->with('success', 'Riga aggiornata correttamente.');
-        } catch (\Exception $e) {
-            Log::error('Errore durante l\'aggiornamento dei dati: ' . $e->getMessage());
-            return Redirect::route('dashboard')->with('error', 'Errore durante l\'aggiornamento dei dati.');
-        }
-    }
-
-    public function destroy(Abc $abc)
-    {
-        try {
-            $abc->delete();
-
-            return Redirect::route('dashboard')->with('success', 'Riga eliminata correttamente.');
-        } catch (\Exception $e) {
-            Log::error('Errore durante la cancellazione dei dati: ' . $e->getMessage());
-            return Redirect::route('dashboard')->with('error', 'Errore durante la cancellazione dei dati.');
         }
     }
 }

@@ -14,19 +14,16 @@ class Abc extends Model
         'data_e_ora',
         'evento',
         'Pensiero',
-        'Emozioni',
-        'Intensita',
         'Azione',
-        'nome', // Aggiunto campo 'nome'
-        'intensita', // Aggiunto campo 'intensita'
-    ];
-
-    protected $casts = [
-        'Emozioni' => 'array',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function emozioni()
+    {
+        return $this->hasMany(Emozione::class);
     }
 }

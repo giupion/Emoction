@@ -1,54 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Inertia } from '@inertiajs/inertia';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-const Dashboard = ({ auth, abcs }) => {
-    const [data, setData] = useState({
+const Dashboard = ({ auth }) => {
+    const [formData, setFormData] = useState({
         data_e_ora: '',
         evento: '',
         Pensiero: '',
-        emozioni: [{ nome: '', intensita: '' }],
-        Azione: ''
+        Azione: '',
+        nome: '', // Nome dell'emozione
+        intensita: '', // Intensità dell'emozione
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setData(prevData => ({ ...prevData, [name]: value }));
-    };
-
-    const handleEmotionChange = (index, field, value) => {
-        const newData = { ...data };
-        newData.emozioni[index][field] = value;
-        setData(newData);
-    };
-
-    const addEmotion = () => {
-        setData(prevData => ({
-            ...prevData,
-            emozioni: [...prevData.emozioni, { nome: '', intensita: '' }]
-        }));
-    };
-
-    const removeEmotion = (index) => {
-        setData(prevData => ({
-            ...prevData,
-            emozioni: prevData.emozioni.filter((_, i) => i !== index)
-        }));
+        setFormData(prevData => ({ ...prevData, [name]: value }));
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
-        console.log('Dati da inviare:', data);
-    
+        console.log('Dati da inviare:', formData); 
         try {
-            const response = await Inertia.post(route('abc.store'), data);
+            const response = await Inertia.post(route('abc.store'), formData);
+
             if (response && response.ok) {
-                setData({
+                setFormData({
                     data_e_ora: '',
                     evento: '',
                     Pensiero: '',
-                    emozioni: [{ nome: '', intensita: '' }],
-                    Azione: ''
+                    Azione: '',
+                    nome: '',
+                    intensita: '',
                 });
                 alert("Dati salvati con successo!");
             } else {
@@ -60,13 +42,9 @@ const Dashboard = ({ auth, abcs }) => {
             alert("Si è verificato un errore durante il salvataggio dei dati.");
         }
     };
-    
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
-        >
+        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}>
             <div className="py-12 w-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -75,24 +53,18 @@ const Dashboard = ({ auth, abcs }) => {
                             <form onSubmit={handleSave}>
                                 <div className="flex flex-col">
                                     <label htmlFor="data_e_ora">Data e Ora:</label>
-                                    <input type="datetime-local" name="data_e_ora" value={data.data_e_ora} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                    <input type="datetime-local" name="data_e_ora" value={formData.data_e_ora} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
                                     <label htmlFor="evento">Evento:</label>
-                                    <input type="text" name="evento" value={data.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                    <input type="text" name="evento" value={formData.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
                                     <label htmlFor="Pensiero">Pensiero:</label>
-                                    <textarea name="Pensiero" value={data.Pensiero} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                    {data.emozioni.map((emotion, index) => (
-                                        <div key={index} className="flex flex-col mt-2">
-                                            <label htmlFor={`Emozione${index}`}>Emozione:</label>
-                                            <input type="text" name={`Emozione${index}`} value={emotion.nome} onChange={(e) => handleEmotionChange(index, 'nome', e.target.value)} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                            <label htmlFor={`Intensita${index}`}>Intensità:</label>
-                                            <input type="number" name={`Intensita${index}`} value={emotion.intensita} onChange={(e) => handleEmotionChange(index, 'intensita', e.target.value)} min="0" className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                            <button type="button" onClick={() => removeEmotion(index)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mt-2">Rimuovi</button>
-                                        </div>
-                                    ))}
-                                    <button type="button" onClick={addEmotion} className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Aggiungi Emozione</button>
+                                    <textarea name="Pensiero" value={formData.Pensiero} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                    <label htmlFor="nome">Emozione:</label>
+                                    <input type="text" name="nome" value={formData.nome} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
+                                    <label htmlFor="intensita">Intensità:</label>
+                                    <input type="number" name="intensita" value={formData.intensita} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
                                     <label htmlFor="Azione">Azione:</label>
-                                    <textarea name="Azione" value={data.Azione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                    <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Salva</button>
+                                    <input type="text" name="Azione" value={formData.Azione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
+                                    <button type="submit" className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Salva</button>
                                 </div>
                             </form>
                         </div>
@@ -104,3 +76,4 @@ const Dashboard = ({ auth, abcs }) => {
 };
 
 export default Dashboard;
+
