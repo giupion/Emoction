@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Abc;
@@ -42,22 +41,23 @@ class AbcController extends Controller
             return response()->json(['error' => 'Errore durante il salvataggio dei dati'], 500);
         }
     }
+
     public function update(Request $request, Abc $abc)
-{
-    $data = $request->validate([
-        'data_e_ora' => 'required|date',
-        'evento' => 'required|string',
-        'Pensiero' => 'nullable|string',
-        'Emozione' => 'nullable|string',
-        'Intensita' => 'nullable|integer',
-        'Azione' => 'nullable|string',
-    ]);
+    {
+        $data = $request->validate([
+            'data_e_ora' => 'required|date',
+            'evento' => 'required|string',
+            'Pensiero' => 'nullable|string',
+            'Emozione' => 'nullable|string',
+            'Intensita' => 'nullable|integer',
+            'Azione' => 'nullable|string',
+        ]);
 
-    $abc->update($data);
+        $abc->update($data);
 
-    // Restituisci una risposta Inertia con i dati aggiornati
-    return Inertia::location(route('dashboard'));
-}
+        // Restituisci una risposta Inertia con i dati aggiornati
+        return Inertia::location(route('dashboard'));
+    }
 
     public function destroy(Abc $abc)
     {
