@@ -14,14 +14,16 @@ class Abc extends Model
         'data_e_ora',
         'evento',
         'Pensiero',
-        'Emozione',
-        'Intensita',
         'Azione',
     ];
-    
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function emozioni()
+    {
+        return $this->hasMany(Emozione::class);
     }
 }
