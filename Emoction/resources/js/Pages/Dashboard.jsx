@@ -1,79 +1,205 @@
-import React, { useState } from 'react';
-import { Inertia } from '@inertiajs/inertia';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { useForm } from '@inertiajs/inertia-react';
+import { Inertia } from '@inertiajs/inertia';
 
-const Dashboard = ({ auth }) => {
-    const [formData, setFormData] = useState({
+export default function Dashboard({ auth, abcs }) {
+    const [data, setData] = useState({
         data_e_ora: '',
         evento: '',
         Pensiero: '',
-        Azione: '',
-        nome: '', // Nome dell'emozione
-        intensita: '', // Intensità dell'emozione
+        Emozione: '',
+        Intensita: '',
+        Azione: ''
     });
 
-    const handleChange = (e) => {
+    const [savedData, setSavedData] = useState([]);
+    const [showForm, setShowForm] = useState(false);
+    const [editingRow, setEditingRow] = useState(null);
+
+    const { post, put, delete: deleteRequest } = useForm();
+
+    useEffect(() => {
+        if (abcs) {
+            setSavedData(abcs);
+        }
+    }, [abcs]);
+
+    const handleChange = e => {
         const { name, value } = e.target;
-        setFormData(prevData => ({ ...prevData, [name]: value }));
+        setData(prevData => ({ ...prevData, [name]: value }));
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
-        console.log('Dati da inviare:', formData); 
+    
         try {
-            const response = await Inertia.post(route('abc.store'), formData);
-
+            const formData = {
+                ...data,
+                _token: auth.csrf_token
+            };
+    
+            const response = await Inertia.post('/abc', formData);
+    
             if (response && response.ok) {
-                setFormData({
+                setSavedData(prevData => [...prevData, response.data]);
+                setData({
                     data_e_ora: '',
                     evento: '',
                     Pensiero: '',
-                    Azione: '',
-                    nome: '',
-                    intensita: '',
+                    Emozione: '',
+                    Intensita: '',
+                    Azione: ''
                 });
-                alert("Dati salvati con successo!");
+                setShowForm(false);
             } else {
                 console.error('Errore durante il salvataggio dei dati');
-                alert("Si è verificato un errore durante il salvataggio dei dati.");
             }
         } catch (error) {
             console.error('Errore durante il salvataggio dei dati:', error.message);
-            alert("Si è verificato un errore durante il salvataggio dei dati.");
+        }
+    };
+
+    const currentDate = new Date().toISOString().split('T')[0];
+    const handleEditRow = (rowData) => {
+        setEditingRow(rowData);
+    };
+
+    const handleEditRowChange = (e, fieldName) => {
+        const { value } = e.target;
+        setEditingRow(prevData => ({ ...prevData, [fieldName]: value }));
+    };
+
+    const handleSaveRow = async () => {
+        try {
+            const response = await Inertia.put(`/abc/${editingRow.id}`, {
+                ...editingRow,
+                _token: auth.csrf_token
+            });
+    
+            if (response && response.ok) {
+                setSavedData(prevData =>
+                    prevData.map(item =>
+                        item.id === editingRow.id ? response.data : item
+                    )
+                );
+                setEditingRow(null);
+            } else {
+                console.error('Errore durante il salvataggio dei dati');
+            }
+        } catch (error) {
+            console.error('Errore durante il salvataggio dei dati:', error.message);
+        }
+    };
+
+    const handleDeleteRow = async (id) => {
+        try {
+            const response = await deleteRequest(`/abc/${id}`, {
+                _token: auth.csrf_token
+            });
+    
+            if (response && response.ok) {
+                setSavedData(prevData =>
+                    prevData.filter(item => item.id !== id)
+                );
+            } else {
+                console.error('Errore durante la cancellazione dei dati');
+            }
+        } catch (error) {
+            console.error('Errore durante la cancellazione dei dati:', error.message);
         }
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}>
+        <AuthenticatedLayout
+            user={auth.user}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
+        >
+            <Head title="Dashboard" />
             <div className="py-12 w-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            <h3 className="text-lg font-semibold mb-2">Aggiungi riga</h3>
-                            <form onSubmit={handleSave}>
-                                <div className="flex flex-col">
+                            <h3 className="text-lg font-semibold mb-2">Dati salvati:</h3>
+                            <div className="overflow-x-hidden">
+                                <table className="w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data e Ora</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evento</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pensiero</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Emozione</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intensità</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azione</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"> </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {savedData.map(item => (
+                                            <tr key={item.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.data_e_ora}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.evento}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.Pensiero}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.Emozione}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.Intensita}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.Azione}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <button onClick={() => handleEditRow(item)} className="text-blue-600 hover:text-blue-900 mr-2">Modifica</button>
+                                                    <button onClick={() => handleDeleteRow(item.id)} className="text-red-600 hover:text-red-900">Cancella</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button onClick={() => setShowForm(!showForm)} className="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                                {showForm ? 'Annulla' : 'Aggiungi riga'}
+                            </button>
+                            {showForm && (
+                                <form onSubmit={handleSave} className="mt-4">
+                                    <div className="flex flex-col">
                                     <label htmlFor="data_e_ora">Data e Ora:</label>
-                                    <input type="datetime-local" name="data_e_ora" value={formData.data_e_ora} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
-                                    <label htmlFor="evento">Evento:</label>
-                                    <input type="text" name="evento" value={formData.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
-                                    <label htmlFor="Pensiero">Pensiero:</label>
-                                    <textarea name="Pensiero" value={formData.Pensiero} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                    <label htmlFor="nome">Emozione:</label>
-                                    <input type="text" name="nome" value={formData.nome} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
-                                    <label htmlFor="intensita">Intensità:</label>
-                                    <input type="number" name="intensita" value={formData.intensita} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
-                                    <label htmlFor="Azione">Azione:</label>
-                                    <input type="text" name="Azione" value={formData.Azione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" required />
-                                    <button type="submit" className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Salva</button>
+<input type="datetime-local" name="data_e_ora" value={data.data_e_ora} onChange={handleChange} max={`${currentDate}T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="evento">Evento:</label>
+                                        <input type="text" name="evento" value={data.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Pensiero">Pensiero:</label>
+                                        <textarea name="Pensiero" value={data.Pensiero} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Emozione">Emozione:</label>
+                                        <input type="text" name="Emozione" value={data.Emozione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Intensita">Intensità:</label>
+                                        <input type="number" name="Intensita" value={data.Intensita} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Azione">Azione:</label>
+                                        <textarea name="Azione" value={data.Azione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Salva</button>
+                                    </div>
+                                </form>
+                            )}
+                            {editingRow && (
+                                <div className="mt-4">
+                                    <h3 className="text-lg font-semibold mb-2">Modifica riga:</h3>
+                                    <div className="flex flex-col">
+                                    <label htmlFor="data_e_ora">Data e Ora:</label>
+<input type="datetime-local" name="data_e_ora" value={data.data_e_ora} onChange={handleChange} max={`${new Date().getFullYear()}-12-31T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+
+                                        <label htmlFor="evento">Evento:</label>
+                                        <input type="text" name="evento" value={editingRow.evento} onChange={(e) => handleEditRowChange(e, 'evento')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Pensiero">Pensiero:</label>
+                                        <textarea name="Pensiero" value={editingRow.Pensiero} onChange={(e) => handleEditRowChange(e, 'Pensiero')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Emozione">Emozione:</label>
+                                        <input type="text" name="Emozione" value={editingRow.Emozione} onChange={(e) => handleEditRowChange(e, 'Emozione')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Intensita">Intensità:</label>
+                                        <input type="number" name="Intensita" value={editingRow.Intensita} onChange={(e) => handleEditRowChange(e, 'Intensita')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="Azione">Azione:</label>
+                                        <textarea name="Azione" value={editingRow.Azione} onChange={(e) => handleEditRowChange(e, 'Azione')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <button onClick={handleSaveRow} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Salva</button>
+                                    </div>
                                 </div>
-                            </form>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
         </AuthenticatedLayout>
     );
-};
-
-export default Dashboard;
-
+}

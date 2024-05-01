@@ -1,69 +1,63 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Abc;
-use App\Models\Emozione;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;
 
 class AbcController extends Controller
 {
     public function store(Request $request)
     {
         try {
-            // Log dei dati ricevuti
-            Log::info('Dati ricevuti:', $request->all());
-
+            // Validazione dei dati ricevuti dalla richiesta
             $validatedData = $request->validate([
                 'data_e_ora' => 'required|date',
                 'evento' => 'required|string',
                 'Pensiero' => 'nullable|string',
+                'Emozione' => 'required|string',
+                'Intensita' => 'required|integer',
                 'Azione' => 'nullable|string',
-                'nome' => 'required|string',
-                'intensita' => 'required|integer',
             ]);
 
+            // Creazione di una nuova istanza di Abc con i dati validati
             $abc = new Abc();
             $abc->fill($validatedData);
-            $abc->user_id = Auth::id();
-            $abc->save();
+            $abc->user_id = Auth::id(); // Impostazione dell'ID dell'utente autenticato
 
-            // Salva il nome e l'intensità associati all'Abc
-            Emozione::create([
-                'nome' => $validatedData['nome'],
-                'intensita' => $validatedData['intensita'],
-                'abc_id' => $abc->id,
-            ]);
-
-            // Log della conferma di salvataggio
-            Log::info('Dati salvati con successo:', $validatedData);
-
-            return Redirect::back()->with('success', 'Riga salvata correttamente.');
+            // Salvataggio dei dati nel database
+            if ($abc->save()) {
+                // Se la richiesta è andata a buon fine, reindirizza l'utente alla dashboard
+                return redirect()->route('dashboard');
+            } else {
+                // Se la richiesta non ha avuto successo, restituisci una risposta JSON con un messaggio di errore
+                return response()->json(['error' => 'Errore durante il salvataggio dei dati'], 500);
+            }
         } catch (\Exception $e) {
+            // Gestisci eventuali eccezioni e restituisci una risposta JSON con un messaggio di errore
             Log::error('Errore durante il salvataggio dei dati: ' . $e->getMessage());
-            return Redirect::back()->with('error', 'Errore durante il salvataggio dei dati.');
+            return response()->json(['error' => 'Errore durante il salvataggio dei dati'], 500);
         }
     }
-<<<<<<< HEAD
-
     public function update(Request $request, Abc $abc)
-    {
-        $data = $request->validate([
-            'data_e_ora' => 'required|date',
-            'evento' => 'required|string',
-            'Pensiero' => 'nullable|string',
-            'Emozione' => 'nullable|string',
-            'Intensita' => 'nullable|integer',
-            'Azione' => 'nullable|string',
-        ]);
+{
+    $data = $request->validate([
+        'data_e_ora' => 'required|date',
+        'evento' => 'required|string',
+        'Pensiero' => 'nullable|string',
+        'Emozione' => 'nullable|string',
+        'Intensita' => 'nullable|integer',
+        'Azione' => 'nullable|string',
+    ]);
 
-        $abc->update($data);
+    $abc->update($data);
 
-        // Restituisci una risposta Inertia con i dati aggiornati
-        return Inertia::location(route('dashboard'));
-    }
+    // Restituisci una risposta Inertia con i dati aggiornati
+    return Inertia::location(route('dashboard'));
+}
 
     public function destroy(Abc $abc)
     {
@@ -71,6 +65,4 @@ class AbcController extends Controller
 
         return Inertia::location(route('dashboard'));
     }
-=======
->>>>>>> f911cae3f2714635f22b47d5ee3ec2eb47c99552
 }
