@@ -17,6 +17,7 @@ export default function Dashboard({ auth, abcs }) {
     const [savedData, setSavedData] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [editingRow, setEditingRow] = useState(null);
+    const [dateWarning, setDateWarning] = useState(false);
 
     const { post, put, delete: deleteRequest } = useForm();
 
@@ -27,30 +28,35 @@ export default function Dashboard({ auth, abcs }) {
     }, [abcs]);
 
     const handleChange = e => {
-    const { name, value } = e.target;
-    let newValue = value;
+        const { name, value } = e.target;
+        let newValue = value;
 
-    // Controllo se il campo è 'data_e_ora' e se il valore è una data passata
-    if (name === 'data_e_ora') {
-        const currentDate = new Date().toISOString().split('T')[0];
-        if (value < currentDate) {
-            newValue = currentDate;
+        if (name === 'data_e_ora') {
+            const currentDate = new Date().toISOString().split('T')[0];
+            if (value < currentDate) {
+                newValue = currentDate;
+                setDateWarning(true);
+            } else {
+                setDateWarning(false);
+            }
         }
-    }
 
-    // Controllo se il campo è 'Intensita' e se il valore è negativo
-    if (name === 'Intensita') {
-        newValue = Math.max(0, parseInt(value));
-    }
+        if (name === 'Intensita') {
+            newValue = Math.max(0, Math.min(100, parseInt(value)));
+        }
 
-    setData(prevData => ({ ...prevData, [name]: newValue }));
-};
-
-    
+        setData(prevData => ({ ...prevData, [name]: newValue }));
+    };
 
     const handleSave = async (e) => {
         e.preventDefault();
-    
+        const currentDate = new Date().toISOString().split('T')[0]; // Ottieni la data odierna corrente
+
+        if (data.data_e_ora.split('T')[0] !== currentDate) {
+            setDateWarning(true);
+            return;
+        }
+
         try {
             const formData = {
                 ...data,
@@ -79,6 +85,7 @@ export default function Dashboard({ auth, abcs }) {
     };
 
     const currentDate = new Date().toISOString().split('T')[0];
+
     const handleEditRow = (rowData) => {
         setEditingRow(rowData);
     };
@@ -87,23 +94,29 @@ export default function Dashboard({ auth, abcs }) {
         const { name, value } = e.target;
         let newValue = value;
     
-        // Controllo se il campo è 'data_e_ora' e se il valore è una data passata
         if (name === 'data_e_ora') {
             const currentDate = new Date().toISOString().split('T')[0];
             if (value < currentDate) {
                 newValue = currentDate;
+                setDateWarning(true);
+            } else {
+                setDateWarning(false);
             }
         }
     
-        // Controllo se il campo è 'Intensita' e se il valore è negativo
         if (name === 'Intensita') {
-            newValue = Math.max(0, parseInt(value));
+            newValue = Math.max(0, Math.min(100, parseInt(value)));
         }
     
         setEditingRow(prevData => ({ ...prevData, [fieldName]: newValue }));
     };
 
     const handleSaveRow = async () => {
+        if (editingRow.data_e_ora !== currentDate) {
+            setDateWarning(true);
+            return;
+        }
+    
         try {
             const response = await Inertia.put(`/abc/${editingRow.id}`, {
                 ...editingRow,
@@ -124,6 +137,8 @@ export default function Dashboard({ auth, abcs }) {
             console.error('Errore durante il salvataggio dei dati:', error.message);
         }
     };
+    
+    
 
     const handleDeleteRow = async (id) => {
         try {
@@ -141,6 +156,10 @@ export default function Dashboard({ auth, abcs }) {
         } catch (error) {
             console.error('Errore durante la cancellazione dei dati:', error.message);
         }
+    };
+
+    const handleCloseDateWarning = () => {
+        setDateWarning(false);
     };
 
     return (
@@ -191,17 +210,18 @@ export default function Dashboard({ auth, abcs }) {
                             {showForm && (
                                 <form onSubmit={handleSave} className="mt-4">
                                     <div className="flex flex-col">
-                                    <label htmlFor="data_e_ora">Data e Ora:</label>
-                                    <input
-    type="datetime-local"
-    name="data_e_ora"
-    value={data.data_e_ora}
-    onChange={handleChange}
-    // Imposta il valore massimo come la data corrente
-    max={`${currentDate}T23:59`}
-    className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
-/>
-
+                                        <label htmlFor="data_e_ora">Data e Ora:</label>
+                                        <input
+                                            type="datetime-local"
+                                            name="data_e_ora"
+                                            value={data.data_e_ora}
+                                            onChange={handleChange}
+                                            max={`${currentDate}T23:59`}
+                                            className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
+                                        />
+                                        {dateWarning && (
+                                            <div className="text-red-500">Inserisci una data valida!</div>
+                                        )}
                                         <label htmlFor="evento">Evento:</label>
                                         <input type="text" name="evento" value={data.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Pensiero">Pensiero:</label>
@@ -220,9 +240,11 @@ export default function Dashboard({ auth, abcs }) {
                                 <div className="mt-4">
                                     <h3 className="text-lg font-semibold mb-2">Modifica riga:</h3>
                                     <div className="flex flex-col">
-                                    <label htmlFor="data_e_ora">Data e Ora:</label>
-<input type="datetime-local" name="data_e_ora" value={data.data_e_ora} onChange={handleChange} max={`${new Date().getFullYear()}-12-31T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-
+                                        <label htmlFor="data_e_ora">Data e Ora:</label>
+                                        <input type="datetime-local" name="data_e_ora" value={editingRow.data_e_ora} onChange={(e) => handleEditRowChange(e, 'data_e_ora')} max={`${new Date().getFullYear()}-12-31T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        {dateWarning && (
+                                            <div className="text-red-500">Inserisci una data valida!</div>
+                                        )}
                                         <label htmlFor="evento">Evento:</label>
                                         <input type="text" name="evento" value={editingRow.evento} onChange={(e) => handleEditRowChange(e, 'evento')} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Pensiero">Pensiero:</label>
