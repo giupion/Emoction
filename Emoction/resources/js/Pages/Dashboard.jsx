@@ -27,9 +27,26 @@ export default function Dashboard({ auth, abcs }) {
     }, [abcs]);
 
     const handleChange = e => {
-        const { name, value } = e.target;
-        setData(prevData => ({ ...prevData, [name]: value }));
-    };
+    const { name, value } = e.target;
+    let newValue = value;
+
+    // Controllo se il campo è 'data_e_ora' e se il valore è una data passata
+    if (name === 'data_e_ora') {
+        const currentDate = new Date().toISOString().split('T')[0];
+        if (value < currentDate) {
+            newValue = currentDate;
+        }
+    }
+
+    // Controllo se il campo è 'Intensita' e se il valore è negativo
+    if (name === 'Intensita') {
+        newValue = Math.max(0, parseInt(value));
+    }
+
+    setData(prevData => ({ ...prevData, [name]: newValue }));
+};
+
+    
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -67,8 +84,23 @@ export default function Dashboard({ auth, abcs }) {
     };
 
     const handleEditRowChange = (e, fieldName) => {
-        const { value } = e.target;
-        setEditingRow(prevData => ({ ...prevData, [fieldName]: value }));
+        const { name, value } = e.target;
+        let newValue = value;
+    
+        // Controllo se il campo è 'data_e_ora' e se il valore è una data passata
+        if (name === 'data_e_ora') {
+            const currentDate = new Date().toISOString().split('T')[0];
+            if (value < currentDate) {
+                newValue = currentDate;
+            }
+        }
+    
+        // Controllo se il campo è 'Intensita' e se il valore è negativo
+        if (name === 'Intensita') {
+            newValue = Math.max(0, parseInt(value));
+        }
+    
+        setEditingRow(prevData => ({ ...prevData, [fieldName]: newValue }));
     };
 
     const handleSaveRow = async () => {
@@ -160,7 +192,16 @@ export default function Dashboard({ auth, abcs }) {
                                 <form onSubmit={handleSave} className="mt-4">
                                     <div className="flex flex-col">
                                     <label htmlFor="data_e_ora">Data e Ora:</label>
-<input type="datetime-local" name="data_e_ora" value={data.data_e_ora} onChange={handleChange} max={`${currentDate}T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                    <input
+    type="datetime-local"
+    name="data_e_ora"
+    value={data.data_e_ora}
+    onChange={handleChange}
+    // Imposta il valore massimo come la data corrente
+    max={`${currentDate}T23:59`}
+    className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
+/>
+
                                         <label htmlFor="evento">Evento:</label>
                                         <input type="text" name="evento" value={data.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Pensiero">Pensiero:</label>
