@@ -41,6 +41,14 @@ export default function Dashboard({ auth, abcs }) {
                 setDateWarning(false);
             }
         }
+        if (name === 'Emozione') {
+            // Controllo sull'emozione (solo testo consentito)
+            const regex = /^[a-zA-Z\s]*$/; // Espressione regolare per controllare solo testo e spazi
+            if (!regex.test(value)) {
+                // Se il valore inserito non è solo testo, non aggiornare lo stato
+                return;
+            }
+        }
 
         if (name === 'Intensita') {
             newValue = Math.max(0, Math.min(100, parseInt(value)));
