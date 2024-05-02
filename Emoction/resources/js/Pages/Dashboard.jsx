@@ -18,6 +18,7 @@ export default function Dashboard({ auth, abcs }) {
     const [showForm, setShowForm] = useState(false);
     const [editingRow, setEditingRow] = useState(null);
     const [dateWarning, setDateWarning] = useState(false);
+    const [editDateWarning, setEditDateWarning] = useState(false);
 
     const { post, put, delete: deleteRequest } = useForm();
 
@@ -84,11 +85,7 @@ export default function Dashboard({ auth, abcs }) {
         }
     };
 
-    const currentDate = new Date().toISOString().split('T')[0];
-
-    const handleEditRow = (rowData) => {
-        setEditingRow(rowData);
-    };
+    const currentDate = new Date().toISOString().split('T')[0]; // Definisci la data corrente qui
 
     const handleEditRowChange = (e, fieldName) => {
         const { name, value } = e.target;
@@ -96,11 +93,11 @@ export default function Dashboard({ auth, abcs }) {
     
         if (name === 'data_e_ora') {
             const currentDate = new Date().toISOString().split('T')[0];
-            if (value < currentDate) {
-                newValue = currentDate;
-                setDateWarning(true);
+            if (value.split('T')[0] !== currentDate) {
+                setEditDateWarning(true);
+                return;
             } else {
-                setDateWarning(false);
+                setEditDateWarning(false);
             }
         }
     
@@ -110,10 +107,12 @@ export default function Dashboard({ auth, abcs }) {
     
         setEditingRow(prevData => ({ ...prevData, [fieldName]: newValue }));
     };
-
+    
     const handleSaveRow = async () => {
-        if (editingRow.data_e_ora !== currentDate) {
-            setDateWarning(true);
+        const currentDate = new Date().toISOString().split('T')[0];
+    
+        if (editingRow.data_e_ora.split('T')[0] !== currentDate) {
+            setEditDateWarning(true);
             return;
         }
     
@@ -138,8 +137,6 @@ export default function Dashboard({ auth, abcs }) {
         }
     };
     
-    
-
     const handleDeleteRow = async (id) => {
         try {
             const response = await deleteRequest(`/abc/${id}`, {
@@ -156,10 +153,6 @@ export default function Dashboard({ auth, abcs }) {
         } catch (error) {
             console.error('Errore durante la cancellazione dei dati:', error.message);
         }
-    };
-
-    const handleCloseDateWarning = () => {
-        setDateWarning(false);
     };
 
     return (
@@ -196,7 +189,7 @@ export default function Dashboard({ auth, abcs }) {
                                                 <td className="px-6 py-4 whitespace-nowrap">{item.Intensita}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{item.Azione}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <button onClick={() => handleEditRow(item)} className="text-blue-600 hover:text-blue-900 mr-2">Modifica</button>
+                                                    <button onClick={() => setEditingRow(item)} className="text-blue-600 hover:text-blue-900 mr-2">Modifica</button>
                                                     <button onClick={() => handleDeleteRow(item.id)} className="text-red-600 hover:text-red-900">Cancella</button>
                                                 </td>
                                             </tr>
@@ -242,7 +235,7 @@ export default function Dashboard({ auth, abcs }) {
                                     <div className="flex flex-col">
                                         <label htmlFor="data_e_ora">Data e Ora:</label>
                                         <input type="datetime-local" name="data_e_ora" value={editingRow.data_e_ora} onChange={(e) => handleEditRowChange(e, 'data_e_ora')} max={`${new Date().getFullYear()}-12-31T23:59`} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                        {dateWarning && (
+                                        {editDateWarning && (
                                             <div className="text-red-500">Inserisci una data valida!</div>
                                         )}
                                         <label htmlFor="evento">Evento:</label>
