@@ -24,10 +24,9 @@ class Abc extends Model
 
     public function emotions()
     {
-        return $this->belongsToMany(Emotion::class)
-                    ->withPivot('intensity')
-                    ->withTimestamps();
+        return $this->belongsToMany(Emotion::class)->withPivot('intensity')->withTimestamps();
     }
+    
     
 }
 

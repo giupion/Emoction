@@ -14,8 +14,12 @@ class AbcController extends Controller
     public function index()
 {
     $abcs = Abc::with('emotions')->get();
+   
     return Inertia::render('Dashboard', ['abcs' => $abcs]);
 }
+
+
+    
 
 
 

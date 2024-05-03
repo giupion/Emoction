@@ -1,7 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { useForm } from '@inertiajs/inertia-react';
 import { Inertia } from '@inertiajs/inertia';
 
 export default function Dashboard({ auth, abcs }) {
@@ -18,9 +17,8 @@ export default function Dashboard({ auth, abcs }) {
     const [showForm, setShowForm] = useState(false);
     const [dateWarning, setDateWarning] = useState(false);
 
-    const { post } = useForm();
-
     useEffect(() => {
+        console.log("Abcs:", abcs); // Aggiunto il log per controllare i dati dei record Abc
         if (abcs) {
             setSavedData(abcs);
         }
@@ -31,49 +29,45 @@ export default function Dashboard({ auth, abcs }) {
         setData(prevData => ({ ...prevData, [name]: value }));
     };
 
-    // Modifica il metodo handleSave nel componente React per inviare i dati delle emozioni al controller Laravel
-const handleSave = async (e) => {
-    e.preventDefault();
-    const currentDate = new Date().toISOString().split('T')[0]; // Ottieni la data odierna corrente
+    const handleSave = async (e) => {
+        e.preventDefault();
+        const currentDate = new Date().toISOString().split('T')[0]; 
 
-    if (data.data_e_ora.split('T')[0] !== currentDate) {
-        setDateWarning(true);
-        return;
-    }
-
-    try {
-        const formData = {
-            data_e_ora: data.data_e_ora,
-            evento: data.evento,
-            Pensiero: data.Pensiero,
-            Azione: data.Azione,
-            Emozione: data.Emozione,
-            Intensita: data.Intensita,
-        };
-
-        const response = await Inertia.post('/abc', formData);
-        if (response && response.ok) {
-            setSavedData(prevData => [...prevData, response.data]);
-            setData({
-                data_e_ora: '',
-                evento: '',
-                Pensiero: '',
-                Azione: '',
-                Emozione: '',
-                Intensita: '',
-            });
-            setShowForm(false);
-        } else {
-            console.error('Errore durante il salvataggio dei dati ABC');
+        if (data.data_e_ora.split('T')[0] !== currentDate) {
+            setDateWarning(true);
+            return;
         }
-    } catch (error) {
-        console.error('Errore durante il salvataggio dei dati:', error.message);
-    }
-};
 
-    
-    
-    
+        try {
+            const formData = {
+                data_e_ora: data.data_e_ora,
+                evento: data.evento,
+                Pensiero: data.Pensiero,
+                Azione: data.Azione,
+                Emozione: data.Emozione,
+                Intensita: data.Intensita,
+            };
+
+            const response = await Inertia.post('/abc', formData);
+            if (response && response.ok) {
+                setSavedData(prevData => [...prevData, response.data]);
+                setData({
+                    data_e_ora: '',
+                    evento: '',
+                    Pensiero: '',
+                    Azione: '',
+                    Emozione: '',
+                    Intensita: '',
+                });
+                setShowForm(false);
+            } else {
+                console.error('Errore durante il salvataggio dei dati ABC');
+            }
+        } catch (error) {
+            console.error('Errore durante il salvataggio dei dati:', error.message);
+        }
+    };
+
     const currentDate = new Date().toISOString().split('T')[0];
 
     return (
@@ -94,10 +88,9 @@ const handleSave = async (e) => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data e Ora</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evento</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pensiero</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Emozioni</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Emozione</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intensità</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Azione</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"> </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
@@ -106,13 +99,13 @@ const handleSave = async (e) => {
                                                 <td className="px-6 py-4 whitespace-nowrap">{item.data_e_ora}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{item.evento}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{item.Pensiero}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{item.Emozione}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{item.Intensita}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{item.Azione}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <button onClick={() => setEditingRow(item)} className="text-blue-600 hover:text-blue-900 mr-2">Modifica</button>
-                                                    <button onClick={() => handleDeleteRow(item.id)} className="text-red-600 hover:text-red-900">Cancella</button>
+                                                    {item.emotions && item.emotions.map(emotion => emotion.nome).join(', ')}
                                                 </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {item.emotions && item.emotions.map(emotion => emotion.intensita).join(', ')}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{item.Azione}</td>
                                             </tr>
                                         ))}
                                     </tbody>

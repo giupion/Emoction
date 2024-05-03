@@ -1,6 +1,5 @@
 <?php
 // routes/web.php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AbcController;
 use App\Http\Controllers\ProfileController;
@@ -8,7 +7,6 @@ use App\Models\Abc;
 use Inertia\Inertia;
 use Illuminate\Foundation\Application;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
-use App\Http\Controllers\EmotionController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -21,7 +19,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
-        $abcs = Abc::all();
+        $abcs = Abc::with('emotions')->get();
         return Inertia::render('Dashboard', ['abcs' => $abcs]);
     })->name('dashboard');
 
@@ -32,10 +30,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/abc', [AbcController::class, 'store'])->name('abc.store');
     Route::put('/abc/{abc}', [AbcController::class, 'update'])->name('abc.update');
     Route::delete('/abc/{abc}', [AbcController::class, 'destroy'])->name('abc.destroy');
-
-    Route::get('/emotions', [EmotionController::class, 'index'])->name('emotions.index');
-    Route::post('/emotions', [EmotionController::class, 'store'])->name('emotions.store');
-    Route::delete('/emotions/{emotion}', [EmotionController::class, 'destroy'])->name('emotions.destroy');
 
     // Rotte aggiuntive per la gestione dei log
     Route::get('logs', [LogViewerController::class, 'index'])->middleware('can:viewLogs')->name('logs.index');

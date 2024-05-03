@@ -10,7 +10,8 @@ class Emotion extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'nome',
+        'intensita'
         // altre proprietà se necessario
     ];
 
