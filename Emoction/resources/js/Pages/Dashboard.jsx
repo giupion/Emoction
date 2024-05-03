@@ -9,8 +9,7 @@ export default function Dashboard({ auth, abcs }) {
         evento: '',
         Pensiero: '',
         Azione: '',
-        Emozione: '',
-        Intensita: '',
+        emozioni: [],
     });
 
     const [savedData, setSavedData] = useState([]);
@@ -28,6 +27,38 @@ export default function Dashboard({ auth, abcs }) {
         setData(prevData => ({ ...prevData, [name]: value }));
     };
 
+    const handleAddEmotion = () => {
+        setData(prevData => ({
+            ...prevData,
+            emozioni: [...prevData.emozioni, { nome: '', intensita: '' }],
+        }));
+    };
+    
+    const handleRemoveEmotion = (index) => {
+        setData(prevData => ({
+            ...prevData,
+            emozioni: prevData.emozioni.filter((_, i) => i !== index),
+        }));
+    };
+    
+    const handleEmotionChange = (index, emotionValue) => {
+        setData(prevData => ({
+            ...prevData,
+            emozioni: prevData.emozioni.map((emotion, i) => (
+                i === index ? { ...emotion, nome: emotionValue } : emotion
+            )),
+        }));
+    };
+    
+    const handleIntensityChange = (index, intensityValue) => {
+        setData(prevData => ({
+            ...prevData,
+            emozioni: prevData.emozioni.map((emotion, i) => (
+                i === index ? { ...emotion, intensita: intensityValue } : emotion
+            )),
+        }));
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
         const currentDate = new Date().toISOString().split('T')[0]; 
@@ -43,8 +74,7 @@ export default function Dashboard({ auth, abcs }) {
                 evento: data.evento,
                 Pensiero: data.Pensiero,
                 Azione: data.Azione,
-                Emozione: data.Emozione,
-                Intensita: data.Intensita,
+                emozioni: data.emozioni,
             };
 
             const response = await Inertia.post('/abc', formData);
@@ -55,8 +85,7 @@ export default function Dashboard({ auth, abcs }) {
                     evento: '',
                     Pensiero: '',
                     Azione: '',
-                    Emozione: '',
-                    Intensita: '',
+                    emozioni: [],
                 });
                 setShowForm(false);
             } else {
@@ -132,10 +161,25 @@ export default function Dashboard({ auth, abcs }) {
                                         <input type="text" name="evento" value={data.evento} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <label htmlFor="Pensiero">Pensiero:</label>
                                         <textarea name="Pensiero" value={data.Pensiero} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                        <label htmlFor="Emozione">Emozione:</label>
-                                        <input type="text" name="Emozione" value={data.Emozione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
-                                        <label htmlFor="Intensita">Intensità:</label>
-                                        <input type="number" name="Intensita" value={data.Intensita} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
+                                        <label htmlFor="emozioni">Emozioni:</label>
+                                        {data.emozioni.map((emotion, index) => (
+                                            <div key={index} className="flex items-center">
+                                                <input
+                                                    type="text"
+                                                    value={emotion.nome}
+                                                    onChange={(e) => handleEmotionChange(index, e.target.value)}
+                                                    className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    value={emotion.intensita}
+                                                    onChange={(e) => handleIntensityChange(index, e.target.value)}
+                                                    className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
+                                                />
+                                                <button type="button" onClick={() => handleRemoveEmotion(index)}>-</button>
+                                            </div>
+                                        ))}
+                                        <button type="button" onClick={handleAddEmotion}>Aggiungi Emozione</button>
                                         <label htmlFor="Azione">Azione:</label>
                                         <textarea name="Azione" value={data.Azione} onChange={handleChange} className="border border-gray-300 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200" />
                                         <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Salva</button>
