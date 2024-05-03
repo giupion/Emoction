@@ -18,7 +18,6 @@ export default function Dashboard({ auth, abcs }) {
     const [dateWarning, setDateWarning] = useState(false);
 
     useEffect(() => {
-        console.log("Abcs:", abcs); // Aggiunto il log per controllare i dati dei record Abc
         if (abcs) {
             setSavedData(abcs);
         }
